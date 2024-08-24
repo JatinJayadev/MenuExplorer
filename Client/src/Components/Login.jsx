@@ -1,4 +1,8 @@
+// components/Login.js
 import { useState } from 'react';
+import axios from 'axios';
+import { Link } from 'react-router-dom'
+
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -6,7 +10,15 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(e)
+        axios.post('http://localhost:4070/login', { email, password })
+            .then((response) => {
+                alert('Login successful');
+                console.log(response)
+            })
+            .catch((err) => {
+                alert('Login failed');
+                console.log(err)
+            });
     };
 
     return (
@@ -32,9 +44,7 @@ const Login = () => {
                 </form>
             </div>
             <div>
-            </div>
-            <div>
-                <span>Don't have an account? SigUp here </span>
+                <span>Dont have an account? <Link to="/">SigUp here</Link> </span>
             </div>
         </div>
     );
