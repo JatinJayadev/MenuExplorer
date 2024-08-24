@@ -1,5 +1,5 @@
-import Login from "./Components/Login"
-import Signup from "./Components/Signup"
+import Login from "./Components/Auth/Login"
+import Signup from "./Components/Auth/Signup"
 
 function App() {
 
