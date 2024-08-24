@@ -1,5 +1,7 @@
 // components/Signup.js
 import { useState } from 'react';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const Signup = () => {
     const [name, setName] = useState('');
@@ -8,7 +10,14 @@ const Signup = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(e)
+        axios.post('http://localhost:4070/register', { name, email, password })
+            .then((res) => {
+                console.log(res)
+                alert('Signup successful');
+            })
+            .catch(() => {
+                alert('Signup failed');
+            });
     };
 
     return (
@@ -40,8 +49,9 @@ const Signup = () => {
                     <button type="submit">Signup</button>
                 </form>
             </div>
+
             <div>
-                <span>Have an account? Login here</span>
+                <span>Have an account? <Link to="/">Login here</Link> </span>
             </div>
         </div>
     );
