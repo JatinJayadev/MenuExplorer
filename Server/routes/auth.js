@@ -89,4 +89,35 @@ app.post('/googlelogin', (req, res) => {
         .catch(err => res.status(500).json({ error: err.message }));
 })
 
+app.put('/changeData/:id', (req, res) => {
+    const id = req.params.id
+
+})
+
+app.put('/changepassword/:id', (req, res) => {
+    const id = req.params.id
+    const { password, newPassword } = req.body;
+    User.findById(id)
+        .then((user) => {
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+            const hashedPassword = hashPassword(password)
+            if (hashedPassword == user.password) {
+                const newHashedPassword = hashPassword(newPassword)
+                return User.findByIdAndUpdate(id, { password: newHashedPassword })
+            } else {
+                return res.status(401).json({ message: 'Password is incorrect' });
+            }
+        })
+        .then((updatedUser) => {
+            if (updatedUser) {
+                res.status(200).json({ message: 'Password changed successfully' });
+            }
+        })
+        .catch((err) =>
+            res.status(500).json({ error: err.message })
+        );
+})
+
 module.exports = app;
