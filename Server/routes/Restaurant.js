@@ -15,6 +15,25 @@ app.get('/restaurants', (req, res) => {
         })
 })
 
+app.post('/addRestaurant', (req, res) => {
+    const { name, ownerName, mobileNumber, menu } = req.body;
+
+    Restaurant.create({
+        name, ownerName, mobileNumber,
+        menu: {
+            breakfast: menu.breakfast,
+            lunch: menu.lunch,
+            dinner: menu.dinner
+        }
+    })
+        .then((restaurant) => {
+            res.status(201).json({ message: 'Restaurant created!!', restaurant: restaurant });
+        })
+        .catch((err) => {
+            res.status(500).json(err)
+        });
+});
+
 app.get('/restaurants/:id', (req, res) => {
     const { id } = req.params;
 
