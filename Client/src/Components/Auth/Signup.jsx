@@ -1,23 +1,23 @@
-// components/Login.js
+// components/Signup.js
 import { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom'
+import GoogleSignup from '../Firebase/FireBaseSignUp';
+import { Link } from 'react-router-dom';
 
-
-const Login = () => {
+const Signup = () => {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:4070/login', { email, password })
-            .then((response) => {
-                alert('Login successful');
-                console.log(response)
+        axios.post('http://localhost:4070/register', { name, email, password })
+            .then((res) => {
+                console.log(res)
+                alert('Signup successful');
             })
-            .catch((err) => {
-                alert('Login failed');
-                console.log(err)
+            .catch(() => {
+                alert('Signup failed');
             });
     };
 
@@ -25,7 +25,14 @@ const Login = () => {
         <div>
             <div>
                 <form onSubmit={handleSubmit}>
-                    <h2>Login</h2>
+                    <h2>Signup</h2>
+                    <input
+                        type="text"
+                        placeholder="Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
                     <input
                         type="email"
                         placeholder="Email"
@@ -40,14 +47,17 @@ const Login = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                    <button type="submit">Login</button>
+                    <button type="submit">Signup</button>
                 </form>
             </div>
             <div>
-                <span>Dont have an account? <Link to="/">SigUp here</Link> </span>
+                <GoogleSignup />
+            </div>
+            <div>
+                <span>Have an account? <Link to="/login">Login here</Link> </span>
             </div>
         </div>
     );
 };
 
-export default Login;
+export default Signup;

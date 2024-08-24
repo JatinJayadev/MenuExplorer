@@ -1,22 +1,21 @@
-// components/Signup.js
 import { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import GoogleLogin from '../Firebase/FireBaseLogin';
+import { Link } from 'react-router-dom'
 
-const Signup = () => {
-    const [name, setName] = useState('');
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:4070/register', { name, email, password })
-            .then((res) => {
-                console.log(res)
-                alert('Signup successful');
+        axios.post('http://localhost:4070/login', { email, password })
+            .then((response) => {
+                alert('Login successful');
+                console.log(response)
             })
-            .catch(() => {
-                alert('Signup failed');
+            .catch((err) => {
+                alert('Login failed');
+                console.log(err)
             });
     };
 
@@ -24,14 +23,7 @@ const Signup = () => {
         <div>
             <div>
                 <form onSubmit={handleSubmit}>
-                    <h2>Signup</h2>
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
+                    <h2>Login</h2>
                     <input
                         type="email"
                         placeholder="Email"
@@ -46,15 +38,17 @@ const Signup = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                    <button type="submit">Signup</button>
+                    <button type="submit">Login</button>
                 </form>
             </div>
-
             <div>
-                <span>Have an account? <Link to="/">Login here</Link> </span>
+                <GoogleLogin />
+            </div>
+            <div>
+                <span>Don't have an account? <Link to="/">SingUp here</Link> </span>
             </div>
         </div>
     );
 };
 
-export default Signup;
+export default Login;
