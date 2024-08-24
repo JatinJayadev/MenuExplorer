@@ -49,4 +49,20 @@ app.get('/restaurants/:id', (req, res) => {
         });
 });
 
+app.put('/updateRestaurant/:id', (req, res) => {
+    const { id } = req.params;
+    const { name, ownerName, mobileNumber, menu } = req.body;
+
+    Restaurant.findByIdAndUpdate(id, { name, ownerName, mobileNumber, menu: { breakfast: menu.breakfast, lunch: menu.lunch, dinner: menu.dinner } })
+        .then((updatedRestaurant) => {
+            if (!updatedRestaurant) {
+                return res.status(404).json({ message: 'Restaurant not found' });
+            }
+            res.status(200).json({ message: 'Restaurant updated successfully', restaurant: updatedRestaurant });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: 'Error updating restaurant', error: err.message });
+        });
+});
+
 module.exports = app;
