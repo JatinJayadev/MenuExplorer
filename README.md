@@ -6,7 +6,7 @@ MenuExplorer is a web application designed to help users explore restaurant menu
 
 ## Tech Stack:
 
-- **Frontend**: React.js, HTML, CSS
+- **Frontend**: React.js, Tailwind css
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB
 - **Authentication**: JSON Web Tokens (JWT)
