@@ -2,10 +2,13 @@ const express = require('express')
 const Restaurant = require('../models/Restaurant')
 require('dotenv').config()
 
+const authenticateToken = require('../middleware/auth')
+
+
 const app = express()
 app.use(express.json())
 
-app.get('/restaurants', (req, res) => {
+app.get('/restaurants', authenticateToken, (req, res) => {
     Restaurant.find()
         .then((restaurant) => {
             res.status(200).send(restaurant)
@@ -15,7 +18,7 @@ app.get('/restaurants', (req, res) => {
         })
 })
 
-app.post('/addRestaurant', (req, res) => {
+app.post('/addRestaurant', authenticateToken, (req, res) => {
     const { name, ownerName, mobileNumber, menu } = req.body;
 
     Restaurant.create({
@@ -34,7 +37,7 @@ app.post('/addRestaurant', (req, res) => {
         });
 });
 
-app.get('/restaurants/:id', (req, res) => {
+app.get('/restaurants/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
 
     Restaurant.findById(id)
@@ -49,7 +52,7 @@ app.get('/restaurants/:id', (req, res) => {
         });
 });
 
-app.put('/updateRestaurant/:id', (req, res) => {
+app.put('/updateRestaurant/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     const { name, ownerName, mobileNumber, menu } = req.body;
 

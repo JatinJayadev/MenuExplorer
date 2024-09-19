@@ -17,6 +17,8 @@ const GoogleLogin = () => {
                 })
                     .then((response) => {
                         alert('Login successful');
+                        const token = response.data.token;
+                        localStorage.setItem('token', token);
                         console.log(response)
                     })
                     .catch((error) => {
