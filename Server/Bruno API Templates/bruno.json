@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Menu Explorer",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,0 +1,40 @@
+meta {
+  name: Update Restaurant
+  type: http
+  seq: 6
+}
+
+put {
+  url: http://localhost:4070/updateRestaurant/66cac6c0194cb61c289031ce
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmNhYzIwMWY4MmExMGNlOTY5ZDQyZTQiLCJyb2xlIjoidXNlciIsImlhdCI6MTcyNjcxNjg2NSwiZXhwIjoxNzI2NzIwNDY1fQ.WfpWVxvw5f5OjZTDEuem8lbmWjeIIdO0E0l7TD607Vc
+}
+
+body:json {
+  {
+    "name": "Sunset Diner",
+    "ownerName": "John Doe",
+    "mobileNumber": "555-1234",
+    "menu": {
+      "breakfast": [
+        "Pancakes",
+        "Omelette",
+        "French Toast"
+      ],
+      "lunch": [
+        "BLT Sandwich",
+        "Caesar Salad",
+        "Grilled Cheese"
+      ],
+      "dinner": [
+        "Spaghetti Bolognese",
+        "Grilled Salmon",
+        "Chicken Alfredo"
+      ]
+    }
+  }
+}
