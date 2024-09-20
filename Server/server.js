@@ -20,6 +20,22 @@ require('dotenv').config()
 const port = process.env.PORT || 4050;
 const URI = process.env.URI
 
+function setupCronJob() {
+    const renderAPIUrl = process.env.RENDERLINK;
+
+    cron.schedule('*/5 * * * *', async () => {
+        const currentTime = new Date().toLocaleString();
+        try {
+            const response = await axios.get(renderAPIUrl);
+            console.log(`Pinged Render API at ${currentTime}: Status ${response.status}`);
+        } catch (error) {
+            console.error(`Failed to ping Render API at ${currentTime}: ${error.message}`);
+        }
+    });
+
+    console.log('Cron jobs is ready!');
+}
+
 mongoose.connect(URI)
     .then(() => {
         console.log("Server is connected to database!")
@@ -27,18 +43,7 @@ mongoose.connect(URI)
             res.send("Working!!!!")
         });
 
-        const renderAPIUrl = process.env.RENDERLINK;
-
-        cron.schedule('*/10 * * * * *', async () => {
-            try {
-                const response = await axios.get(renderAPIUrl);
-                console.log(`Pinged Render API: Status ${response.status}`);
-            } catch (error) {
-                console.error(`Failed to ping Render API: ${error.message}`);
-            }
-        });
-
-        console.log('Cron jobs is ready!');
+        setupCronJob();
     })
     .catch((err) => {
         console.log("Database Error", err)
