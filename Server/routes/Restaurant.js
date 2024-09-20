@@ -1,5 +1,5 @@
 const express = require('express')
-const Restaurant = require('../models/Restaurant')
+const Restaurant = require('../Models/Restaurant')
 require('dotenv').config()
 
 const authenticateToken = require('../middleware/auth')
