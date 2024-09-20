@@ -8,7 +8,7 @@ const authenticateToken = require('../middleware/auth')
 const app = express()
 app.use(express.json())
 
-app.get('/restaurants', authenticateToken, (req, res) => {
+app.get('/restaurants', (req, res) => {
     Restaurant.find()
         .then((restaurant) => {
             res.status(200).send(restaurant)
@@ -18,7 +18,7 @@ app.get('/restaurants', authenticateToken, (req, res) => {
         })
 })
 
-app.post('/addRestaurant', authenticateToken, (req, res) => {
+app.post('/addRestaurant', (req, res) => {
     const { name, ownerName, mobileNumber, menu } = req.body;
 
     Restaurant.create({
@@ -37,7 +37,7 @@ app.post('/addRestaurant', authenticateToken, (req, res) => {
         });
 });
 
-app.get('/restaurants/:id', authenticateToken, (req, res) => {
+app.get('/restaurants/:id', (req, res) => {
     const { id } = req.params;
 
     Restaurant.findById(id)
@@ -52,11 +52,14 @@ app.get('/restaurants/:id', authenticateToken, (req, res) => {
         });
 });
 
-app.put('/updateRestaurant/:id', authenticateToken, (req, res) => {
+app.put('/updateRestaurant/:id', (req, res) => {
     const { id } = req.params;
     const { name, ownerName, mobileNumber, menu } = req.body;
 
-    Restaurant.findByIdAndUpdate(id, { name, ownerName, mobileNumber, menu: { breakfast: menu.breakfast, lunch: menu.lunch, dinner: menu.dinner } })
+    Restaurant.findByIdAndUpdate(id, { name, ownerName, mobileNumber, menu: { breakfast: menu.breakfast, lunch: menu.lunch, dinner: menu.dinner } }
+        ,
+        { new: true, useFindAndModify: false }
+    )
         .then((updatedRestaurant) => {
             if (!updatedRestaurant) {
                 return res.status(404).json({ message: 'Restaurant not found' });
@@ -65,6 +68,21 @@ app.put('/updateRestaurant/:id', authenticateToken, (req, res) => {
         })
         .catch((err) => {
             res.status(500).json({ message: 'Error updating restaurant', error: err.message });
+        });
+});
+
+app.delete('/deleteRestaurant/:id', (req, res) => {
+    const { id } = req.params;
+
+    Restaurant.findByIdAndDelete(id)
+        .then((deletedRestaurant) => {
+            if (!deletedRestaurant) {
+                return res.status(404).json({ message: 'Restaurant not found' });
+            }
+            res.status(200).json({ message: 'Restaurant deleted successfully', restaurant: deletedRestaurant });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: 'Error deleting restaurant', error: err.message });
         });
 });
 
