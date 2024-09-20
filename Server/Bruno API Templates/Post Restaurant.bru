@@ -1,0 +1,36 @@
+meta {
+  name: Post Restaurant
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:4070/addRestaurant
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "name": "Green Garden Cafe",
+      "ownerName": "Jane Smith",
+      "mobileNumber": "555-5678",
+      "menu": {
+        "breakfast": [
+          "Smoothie Bowl",
+          "Avocado Toast",
+          "Greek Yogurt"
+        ],
+        "lunch": [
+          "Quinoa Salad",
+          "Veggie Wrap",
+          "Lentil Soup"
+        ],
+        "dinner": [
+          "Stuffed Peppers",
+          "Vegetable Stir-Fry",
+          "Mushroom Risotto"
+        ]
+      }
+  }
+}
