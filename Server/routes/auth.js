@@ -21,7 +21,15 @@ function hashPassword(password) {
     return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-
+app.get('/users', (req, res) => {
+    User.find()
+        .then((users) => {
+            res.status(200).json({ users })
+            console.log("These are the users")
+        }).catch((err) => {
+            res.status(500).send(err)
+        })
+})
 
 app.post('/register', (req, res) => {
     const { name, email, password } = req.body;

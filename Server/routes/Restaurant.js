@@ -34,6 +34,20 @@ app.post('/addRestaurant', (req, res) => {
         });
 });
 
+app.get('/restaurants/:id', (req, res) => {
+    const { id } = req.params;
+
+    Restaurant.findById(id)
+        .then((restaurant) => {
+            if (!restaurant) {
+                return res.status(404).send({ message: "Restaurant not found." });
+            }
+            res.status(200).send(restaurant);
+        })
+        .catch((err) => {
+            res.status(500).send({ message: "Error retrieving restaurant details.", error: err.message });
+        });
+});
 
 app.put('/updateRestaurant/:id', (req, res) => {
     const { id } = req.params;
@@ -54,5 +68,20 @@ app.put('/updateRestaurant/:id', (req, res) => {
         });
 });
 
+
+app.delete('/deleteRestaurant/:id', (req, res) => {
+    const { id } = req.params;
+
+    Restaurant.findByIdAndDelete(id)
+        .then((deletedRestaurant) => {
+            if (!deletedRestaurant) {
+                return res.status(404).json({ message: 'Restaurant not found' });
+            }
+            res.status(200).json({ message: 'Restaurant deleted successfully', restaurant: deletedRestaurant });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: 'Error deleting restaurant', error: err.message });
+        });
+});
 
 module.exports = app;
