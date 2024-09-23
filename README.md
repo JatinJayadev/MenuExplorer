@@ -18,5 +18,3 @@ MenuExplorer is a web application designed to help users explore restaurant menu
 - **User Interface and Search Functionality**: User-friendly interface for browsing and searching restaurants and menu items. Search functionality based on location, cuisine type, and price range.
 - **User Interaction and Feedback**: Ability for users to save favorite restaurants and dishes, provide feedback, and rate menu items.
 
-## Backend Deployement Link:
-**Render Link**: https://menuexplorer.onrender.com/
