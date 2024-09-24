@@ -17,6 +17,14 @@ function generateToken(userId, role) {
     return token;
 }
 
+const transporter = nodemailer.createTransport({
+    service: "outlook",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
 function hashPassword(password) {
     return crypto.createHash('sha256').update(password).digest('hex');
 }
@@ -33,16 +41,29 @@ app.get('/users', (req, res) => {
 
 app.post('/register', (req, res) => {
     const { name, email, password } = req.body;
-    const hashedPassword = hashPassword(password)
+    const hashedPassword = hashPassword(password);
 
     User.create({
         name, email, password: hashedPassword, roles: 'user'
     }).then((result) => {
-        res.status(201).send(result)
+        // Send confirmation email
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Welcome to Menu Explorer!',
+            text: `Hello ${name},\n\nThank you for registering! We're excited to have you on board.\n\nBest regards,\nMenu Explorer Team`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                return res.status(500).send('Error sending email: ' + error.toString());
+            }
+            res.status(201).send(result);
+        });
     }).catch((err) => {
-        res.status(500).send(err)
-    })
-})
+        res.status(500).send(err);
+    });
+});
 
 app.post('/login', (req, res) => {
     const { email, password } = req.body;
