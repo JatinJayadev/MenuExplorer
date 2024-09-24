@@ -1,163 +1,217 @@
-const express = require('express')
-const crypto = require('crypto')
-const User = require('../Models/User')
-const jwt = require('jsonwebtoken')
+const express = require("express");
+const crypto = require("crypto");
+const User = require("../Models/User");
+const jwt = require("jsonwebtoken");
+const Joi = require("joi"); 
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
-require('dotenv').config()
+const app = express();
+app.use(express.json());
 
-const app = express()
-app.use(express.json())
+const secret = process.env.secret;
 
-const secret = process.env.secret
+const userSchema = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).max(30).required(),
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).max(30).required(),
+});
+
+const changePasswordSchema = Joi.object({
+  password: Joi.string().min(6).max(30).required(),
+  newPassword: Joi.string().min(6).max(30).required(),
+});
 
 function generateToken(userId, role) {
-    const token = jwt.sign({ userId: userId, role: role }, secret, {
-        expiresIn: '1h'
-    });
-    return token;
+  const token = jwt.sign({ userId: userId, role: role }, secret, {
+    expiresIn: "1h",
+  });
+  return token;
 }
 
 const transporter = nodemailer.createTransport({
-    service: "outlook",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  service: "outlook",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 function hashPassword(password) {
-    return crypto.createHash('sha256').update(password).digest('hex');
+  return crypto.createHash("sha256").update(password).digest("hex");
 }
 
-app.get('/users', (req, res) => {
-    User.find()
-        .then((users) => {
-            res.status(200).json({ users })
-            console.log("These are the users")
-        }).catch((err) => {
-            res.status(500).send(err)
-        })
-})
-
-app.post('/register', (req, res) => {
-    const { name, email, password } = req.body;
-    const hashedPassword = hashPassword(password);
-
-    User.create({
-        name, email, password: hashedPassword, roles: 'user'
-    }).then((result) => {
-        // Send confirmation email
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Welcome to Menu Explorer!',
-            text: `Hello ${name},\n\nThank you for registering! We're excited to have you on board.\n\nBest regards,\nMenu Explorer Team`
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                return res.status(500).send('Error sending email: ' + error.toString());
-            }
-            res.status(201).send(result);
-        });
-    }).catch((err) => {
-        res.status(500).send(err);
+app.get("/users", (req, res) => {
+  User.find()
+    .then((users) => {
+      res.status(200).json({ users });
+      console.log("These are the users");
+    })
+    .catch((err) => {
+      res.status(500).send(err);
     });
 });
 
-app.post('/login', (req, res) => {
-    const { email, password } = req.body;
+app.post("/register", (req, res) => {
+  const { error } = userSchema.validate(req.body); // Validate request data
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-    User.findOne({ email }).then((user) => {
-        if (!user) {
-            return res.status(401).json({ message: 'Invalid Credentials' })
+  const { name, email, password } = req.body;
+  const hashedPassword = hashPassword(password);
+
+  User.create({
+    name,
+    email,
+    password: hashedPassword,
+    roles: "user",
+  })
+    .then((result) => {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Welcome to Menu Explorer!",
+        text: `Hello ${name},\n\nThank you for registering! We're excited to have you on board.\n\nBest regards,\nMenu Explorer Team`,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res
+            .status(500)
+            .send("Error sending email: " + error.toString());
         }
-
-        const plainText = hashPassword(password)
-
-        if (plainText === user.password) {
-            const token = generateToken(user._id, user.roles);
-            return res.status(201).json({
-                message: 'Logged In Successfully', data: user, token: token
-            });
-        } else {
-            return res.status(401).json({ message: 'Invalid Credentials' });
-        }
-    }).catch((err) => {
-        res.status(500).send(err);
+        res.status(201).send(result);
+      });
+    })
+    .catch((err) => {
+      res.status(500).send(err);
     });
-})
+});
 
-app.post('/googlesignup', (req, res) => {
-    const { name, email } = req.body;
-    const password = process.env.password
-    const hashedPassword = hashPassword(password)
-    User.findOne({ email })
-        .then((user) => {
-            if (user) {
-                return res.status(400).json({ message: 'User already exists' });
-            } else {
-                return User.create({ name, email, password: hashedPassword, roles: 'user' });
-            }
-        })
-        .then((newUser) => {
-            if (newUser) {
-                const token = generateToken(newUser._id, newUser.roles);
-                return res.status(200).json({
-                    message: 'User registered successfully', data: newUser, token: token
-                });
-            }
-        })
-        .catch(err => res.status(500).json({ error: err.message }));
-})
+app.post("/login", (req, res) => {
+  const { error } = loginSchema.validate(req.body); 
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-app.post('/googlelogin', (req, res) => {
-    const { email } = req.body;
+  const { email, password } = req.body;
 
-    User.findOne({ email })
-        .then((user) => {
-            if (!user) {
-                return res.status(404).json({ error: 'You are not registered!' });
-            }
-            const password = process.env.password
-            const hashedPassword = hashPassword(password)
+  User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return res.status(401).json({ message: "Invalid Credentials" });
+      }
 
-            if (hashedPassword === user.password) {
-                const token = generateToken(user._id, user.roles);
-                return res.status(200).json({
-                    message: 'Logged In Successfully', data: user, token: token
-                });
-            } else {
-                return res.status(401).send({ error: 'Invalid Credentials' });
-            }
-        })
-        .catch(err => res.status(500).json({ error: err.message }));
-})
+      const plainText = hashPassword(password);
 
-app.put('/changepassword/:id', (req, res) => {
-    const id = req.params.id
-    const { password, newPassword } = req.body;
-    User.findById(id)
-        .then((user) => {
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
-            const hashedPassword = hashPassword(password)
-            if (hashedPassword == user.password) {
-                const newHashedPassword = hashPassword(newPassword)
-                return User.findByIdAndUpdate(id, { password: newHashedPassword })
-            } else {
-                return res.status(401).json({ message: 'Password is incorrect' });
-            }
-        })
-        .then((updatedUser) => {
-            if (updatedUser) {
-                res.status(200).json({ message: 'Password changed successfully' });
-            }
-        })
-        .catch((err) =>
-            res.status(500).json({ error: err.message })
-        );
-})
+      if (plainText === user.password) {
+        const token = generateToken(user._id, user.roles);
+        return res.status(201).json({
+          message: "Logged In Successfully",
+          data: user,
+          token: token,
+        });
+      } else {
+        return res.status(401).json({ message: "Invalid Credentials" });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send(err);
+    });
+});
+
+app.post("/googlesignup", (req, res) => {
+  const { error } = userSchema.validate(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  const { name, email } = req.body;
+  const password = process.env.password;
+  const hashedPassword = hashPassword(password);
+
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        return res.status(400).json({ message: "User already exists" });
+      } else {
+        return User.create({
+          name,
+          email,
+          password: hashedPassword,
+          roles: "user",
+        });
+      }
+    })
+    .then((newUser) => {
+      if (newUser) {
+        const token = generateToken(newUser._id, newUser.roles);
+        return res.status(200).json({
+          message: "User registered successfully",
+          data: newUser,
+          token: token,
+        });
+      }
+    })
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
+
+app.post("/googlelogin", (req, res) => {
+  const { error } = Joi.object({
+    email: Joi.string().email().required(),
+  }).validate(req.body); // Validate request data
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  const { email } = req.body;
+
+  User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ error: "You are not registered!" });
+      }
+      const password = process.env.password;
+      const hashedPassword = hashPassword(password);
+
+      if (hashedPassword === user.password) {
+        const token = generateToken(user._id, user.roles);
+        return res.status(200).json({
+          message: "Logged In Successfully",
+          data: user,
+          token: token,
+        });
+      } else {
+        return res.status(401).send({ error: "Invalid Credentials" });
+      }
+    })
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
+
+app.put("/changepassword/:id", (req, res) => {
+  const { error } = changePasswordSchema.validate(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  const id = req.params.id;
+  const { password, newPassword } = req.body;
+
+  User.findById(id)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const hashedPassword = hashPassword(password);
+      if (hashedPassword == user.password) {
+        const newHashedPassword = hashPassword(newPassword);
+        return User.findByIdAndUpdate(id, { password: newHashedPassword });
+      } else {
+        return res.status(401).json({ message: "Password is incorrect" });
+      }
+    })
+    .then((updatedUser) => {
+      if (updatedUser) {
+        res.status(200).json({ message: "Password changed successfully" });
+      }
+    })
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
 
 module.exports = app;
