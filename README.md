@@ -20,3 +20,7 @@ MenuExplorer is a web application designed to help users explore restaurant menu
 
 ## Backend Deployement Link:
 **Render Link**: https://menuexplorer.onrender.com/
+
+
+## Frontend Deployement Link:
+**Netlify Link**: https://menuexplorerr.netlify.app/
